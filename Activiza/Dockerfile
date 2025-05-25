@@ -1,22 +1,28 @@
-# Etapa de construcción
+# -----------------------------
+# Etapa de construcción (Build)
+# -----------------------------
 FROM maven:3.8.6-eclipse-temurin-17 AS build
 
 # Crear carpeta de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el contenido del proyecto (incluyendo el pom.xml y src/)
-COPY . .
+# Copiar los archivos necesarios para compilar
+COPY pom.xml .
+COPY src ./src
 
-# Compilar el proyecto sin correr tests
+# Compilar el proyecto (incluye 'clean' y omite tests)
 RUN mvn clean package -DskipTests
 
-# Etapa final: solo el JAR
+# -----------------------------
+# Etapa de ejecución (Run)
+# -----------------------------
 FROM eclipse-temurin:17
 
+# Crear carpeta de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el JAR desde la etapa de build
+# Copiar el JAR compilado desde la etapa de build
 COPY --from=build /app/target/*.jar app.jar
 
-# Comando para ejecutar el JAR
+# Ejecutar el JAR
 CMD ["java", "-jar", "app.jar"]
